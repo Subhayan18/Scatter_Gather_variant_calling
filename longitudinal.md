@@ -1210,21 +1210,6 @@ Default is balanced. To adjust:
 
 ---
 
-## CITATION
-
-If you use this pipeline in your research, please cite:
-
-**GATK:**
-- Van der Auwera GA & O'Connor BD. (2020). Genomics in the Cloud: Using Docker, GATK, and WDL in Terra (1st Edition). O'Reilly Media.
-
-**Mutect2:**
-- Benjamin D, Sato T, Cibulskis K, et al. Calling Somatic SNVs and Indels with Mutect2. bioRxiv. 2019.
-
-**BCFtools:**
-- Danecek P, Bonfield JK, et al. Twelve years of SAMtools and BCFtools. GigaScience. 2021.
-
----
-
 ## LICENSE
 
 This pipeline is provided as-is for research use. Please check individual tool licenses:
@@ -1309,11 +1294,6 @@ Sample3                             110            4300           8500
 ---
 
 ## REFERENCES
-
-### Tools Documentation
-- **GATK4:** https://gatk.broadinstitute.org/
-- **BCFtools:** http://samtools.github.io/bcftools/
-- **Mutect2:** https://gatk.broadinstitute.org/hc/en-us/articles/360037593851
 
 ### Related Protocols
 - GATK Best Practices: Somatic SNVs + Indels
