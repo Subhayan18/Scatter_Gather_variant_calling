@@ -765,54 +765,6 @@ echo "Pipeline complete!"
 echo "Final VCF: ${FINAL_DIR}/${SAMPLE}.vcf.gz"
 ```
 
-### Multi-Sample Cohort Calling
-
-```bash
-#!/bin/bash
-# Scatter-gather for multi-sample joint calling
-
-SAMPLES=("Sample1" "Sample2" "Sample3" "Sample4")
-N_INTERVALS=50
-
-# Step 1: Generate GVCFs per sample (scattered)
-for sample in "${SAMPLES[@]}"; do
-  for i in $(seq 1 ${N_INTERVALS}); do
-    INTERVAL="intervals/interval_${i}.bed"
-    
-    sbatch --wrap="gatk HaplotypeCaller \
-                      -R reference.fa \
-                      -I ${sample}.bam \
-                      -L ${INTERVAL} \
-                      -ERC GVCF \
-                      -O scatter/${sample}_${i}.g.vcf"
-  done
-done
-
-# Wait for completion...
-
-# Step 2: Combine GVCFs per interval
-for i in $(seq 1 ${N_INTERVALS}); do
-  GVCFS=$(echo "${SAMPLES[@]}" | sed "s/\([^ ]*\)/scatter\/\1_${i}.g.vcf/g")
-  
-  sbatch --wrap="gatk CombineGVCFs \
-                    -R reference.fa \
-                    ${GVCFS} \
-                    -O combined/interval_${i}.g.vcf"
-done
-
-# Step 3: Genotype per interval
-for i in $(seq 1 ${N_INTERVALS}); do
-  sbatch --wrap="gatk GenotypeGVCFs \
-                    -R reference.fa \
-                    -V combined/interval_${i}.g.vcf \
-                    -O genotyped/interval_${i}.vcf"
-done
-
-# Step 4: Gather final cohort VCF
-ls genotyped/interval_*.vcf > vcf_list.txt
-gatk GatherVcfs -I vcf_list.txt -O cohort.vcf.gz
-```
-
 ---
 
 ## Advanced Topics
@@ -862,29 +814,6 @@ for interval in intervals/*.bed; do
     sbatch --mem=4G variant_call.sh ${interval}
   fi
 done
-```
-
-### Cloud-Native Implementations
-
-**AWS Batch:**
-```json
-{
-  "jobDefinition": "variant-calling",
-  "arrayProperties": {
-    "size": 50
-  },
-  "parameters": {
-    "interval": "s3://bucket/intervals/$AWS_BATCH_JOB_ARRAY_INDEX.bed"
-  }
-}
-```
-
-**Google Cloud:**
-```bash
-gcloud batch jobs submit vc-job \
-  --config=variant-calling.json \
-  --location=us-central1 \
-  --task-count=50
 ```
 
 ---
@@ -988,86 +917,9 @@ sstat -j JOBID --format=AveCPU,MaxRSS,AveVMSize
 sacct -j JOBID --format=JobID,MaxRSS,Elapsed,State
 ```
 
----
-
-## Cost Analysis
-
-### Compute Cost Comparison
-
-**Assumptions:**
-- $1 per core-hour
-- 30x WGS
-
-| Method | Cores | Time | Cost | Cost per Sample |
-|--------|-------|------|------|-----------------|
-| **Serial** | 1 | 24h | $24 | $24 |
-| **Scatter-Gather** | 50 | 45min | $37.50 | $37.50 |
-| **Over-parallelized** | 200 | 30min | $100 | $100 |
-
-**Optimal Trade-off:** 50 intervals
-- 56% cost increase
-- 96% time reduction
-- **Best ROI for production pipelines**
-
-### Break-Even Analysis
-
-```
-When is scatter-gather worth it?
-
-Break-even = (Cost Increase) / (Value of Time Saved)
-
-Example: Research vs Production
-Research: Time saved = $20/hour → Not worth it below 10 samples
-Production: Time saved = $200/hour → Always worth it
-```
-
----
-
 ## Real-World Case Studies
 
-### Case Study 1: Clinical Genomics Lab
-
-**Setup:**
-- 50 WGS samples per day
-- 24-hour turnaround requirement
-- 100-core HPC cluster
-
-**Implementation:**
-```
-Serial approach:   50 samples × 24 hours = 1200 hours (IMPOSSIBLE)
-Scatter-gather:    50 samples × 45 minutes = 37.5 hours (FEASIBLE)
-Parallelization:   2 samples running simultaneously
-Result:            Meet turnaround time with room to spare
-```
-
-**Outcome:** Enabled clinical implementation
-
-### Case Study 2: Large-Scale Population Study
-
-**Setup:**
-- 10,000 WGS samples
-- Budget: $500,000 compute
-- Timeline: 6 months
-
-**Implementation:**
-```
-Serial:      10,000 × 24 hours = 240,000 core-hours
-             → $240,000 compute cost
-             → 27 years wall-clock time (on 1 core!)
-
-Scatter-50:  10,000 × 45 minutes × 50 cores = 375,000 core-hours
-             → $375,000 compute cost
-             → 31 days wall-clock time (with 50 cores)
-```
-
-**Optimization:**
-- Use spot instances (70% discount) → $112,500
-- Stagger job submission → Better queue efficiency
-- Final cost: $150,000 (70% savings vs budget)
-
-**Outcome:** Completed 2 months early, under budget
-
-### Case Study 3: Cancer Genomics
+### Case Study : Cancer Genomics
 
 **Setup:**
 - Tumor/normal pairs (60x coverage)
@@ -1120,15 +972,6 @@ ML Model: Predict optimal interval size based on:
 Result: Dynamic interval generation
         → Better load balancing
         → 20-30% additional speedup
-```
-
-### Hybrid Cloud-HPC
-
-```
-Low-priority samples  → Cloud spot instances (cheap)
-High-priority samples → Dedicated HPC (fast)
-
-Total cost: 40% reduction
 ```
 
 ---
