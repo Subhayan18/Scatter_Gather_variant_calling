@@ -46,16 +46,16 @@ Scatter-gather is a parallel processing pattern that:
                        ↓
     ┌──────────────────┼──────────────────┐
     ↓                  ↓                  ↓
-[Interval 1]      [Interval 2]  ...  [Interval N]
+[Interval 1]     [Interval 2]  ...   [Interval N]
     ↓                  ↓                  ↓
-[Process 1]       [Process 2]  ...  [Process N]
+[Process 1]       [Process 2]  ...   [Process N]
     ↓                  ↓                  ↓
-[Output 1]        [Output 2]   ...  [Output N]
+[Output 1]        [Output 2]   ...   [Output N]
     └──────────────────┼──────────────────┘
                        ↓
                     GATHER
                        ↓
-              [Final Output]
+                [Final Output]
 ```
 
 ### Three Phases:
