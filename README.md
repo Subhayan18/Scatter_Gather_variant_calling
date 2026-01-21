@@ -45,11 +45,11 @@ Scatter-gather is a parallel processing pattern that:
                     SCATTER
                        ↓
     ┌──────────────────┼──────────────────┐
-    ↓                  ↓                   ↓
+    ↓                  ↓                  ↓
 [Interval 1]      [Interval 2]  ...  [Interval N]
-    ↓                  ↓                   ↓
+    ↓                  ↓                  ↓
 [Process 1]       [Process 2]  ...  [Process N]
-    ↓                  ↓                   ↓
+    ↓                  ↓                  ↓
 [Output 1]        [Output 2]   ...  [Output N]
     └──────────────────┼──────────────────┘
                        ↓
@@ -140,7 +140,7 @@ chr3  [===][===][===]...
 #### Option 3: Callable Regions (Recommended for WGS)
 ```
 Genome:     [===]   [======]     [===]  [========]   [==]
-            |       |            |      |          |
+            |       |            |      |            |
 Intervals:  [===]   [======]     [===]  [========]   [==]
             (skip N regions, centromeres, gaps)
 ```
@@ -232,11 +232,11 @@ Scale to match available infrastructure!
 
 **Variant calling memory usage:**
 
-| Genome Coverage | Serial Memory | Scatter Memory (per job) |
-|-----------------|---------------|--------------------------|
-| **30x WGS** | 64 GB | 2-4 GB |
-| **60x WGS** | 96 GB | 3-6 GB |
-| **100x WGS** | 128 GB | 4-8 GB |
+| Genome Coverage |  Serial Memory  | Scatter Memory (per job) |
+|-----------------|-----------------|--------------------------|
+| **30x WGS**     | 64 GB | 2-4 GB  |
+| **60x WGS**     | 96 GB | 3-6 GB  |
+| **100x WGS**    | 128 GB | 4-8 GB |
 
 **Result:** Can process high-coverage WGS on standard compute nodes
 
@@ -366,8 +366,8 @@ tabix -p vcf final/sample_complete.vcf.gz
 
 | Method | Intervals | Cores | Time | Cost* |
 |--------|-----------|-------|------|-------|
-| Serial | 1 | 1 | 24 hours | $24 |
-| Scatter-Gather | 25 (chr) | 25 | 1.5 hours | $37.50 |
+| Serial |  1  |  1  | 24 hours | $24 |
+| Scatter-Gather | 25 | 25 | 1.5 hours | $37.50 |
 | Scatter-Gather | 50 | 50 | 45 minutes | $37.50 |
 | Scatter-Gather | 100 | 100 | 30 minutes | $50 |
 
@@ -382,7 +382,7 @@ tabix -p vcf final/sample_complete.vcf.gz
 
 | Method | Time | Peak Memory |
 |--------|------|-------------|
-| Serial | 48 hours | 96 GB |
+| Serial | 48 hours |  96 GB  |
 | Scatter-Gather (50) | 90 minutes | 6 GB/job |
 
 **Key Advantage:** Fits on standard compute nodes!
@@ -526,15 +526,15 @@ fi
 ## Tools & Compatibility
 
 ### Supported Variant Callers
-
-| Tool | Scatter Support | Gather Method | Notes |
-|------|-----------------|---------------|-------|
-| **GATK HaplotypeCaller** | ✅ Native | GatherVcfs | Recommended |
-| **GATK Mutect2** | ✅ Native | GatherVcfs | Somatic calling |
-| **FreeBayes** | ✅ Manual | bcftools concat | Requires -L flag |
-| **DeepVariant** | ✅ Native | concat/merge | Built-in support |
-| **Strelka2** | ✅ Manual | Requires merging | Region-based |
-| **DRAGEN** | ✅ Native | Built-in | Hardware accelerated |
+----------------------------------------------------------------------------------------
+|             Tool         |  Scatter Support  |  Gather Method  |         Notes       | 
+|--------------------------|-------------------|-----------------|---------------------- 
+| **GATK HaplotypeCaller** | ✅ Native         | GatherVcfs      | Recommended         |  
+| **GATK Mutect2**         | ✅ Native         | GatherVcfs      | Somatic calling     | 
+| **FreeBayes**            | ✅ Manual         | bcftools concat | Requires -L flag    | 
+| **DeepVariant**          | ✅ Native         | concat/merge    | Built-in support    | 
+| **Strelka2**             | ✅ Manual         | Require merging | Region-based        | 
+| **DRAGEN**               | ✅ Native         | Built-in        | Hardware accelerated|
 
 ### Workflow Managers
 
@@ -992,13 +992,13 @@ Result: Dynamic interval generation
 
 ### When to Use Scatter-Gather
 
-| Use Case | Recommendation |
-|----------|----------------|
-| **Single WGS sample** | Optional (convenience) |
-| **10+ WGS samples** | Recommended |
-| **Clinical workflow** | Essential |
-| **Population studies (1000+)** | Essential |
-| **Time-sensitive** | Essential |
+|        Use Case       | Recommendation |
+|-----------------------|----------------|
+| **Single WGS sample** | Optional       |
+| **10+ WGS samples**   | Recommended    |
+| **Clinical workflow** | Essential      |
+| **Population studies  | Essential      |
+| **Time-sensitive**    | Essential      |
 
 ### Getting Started
 
@@ -1097,21 +1097,21 @@ This documentation is provided under the MIT License. See LICENSE file for detai
 ┌─────────────────────────────────────────────────────────┐
 │            SCATTER-GATHER QUICK REFERENCE               │
 ├─────────────────────────────────────────────────────────┤
-│                                                          │
+│                                                         │
 │  Optimal Intervals:     50-100 for WGS                  │
 │  Memory per job:        4-8 GB                          │
 │  Time per interval:     20-40 minutes                   │
 │  Expected speedup:      30-50x                          │
-│                                                          │
+│                                                         │
 │  SCATTER:    gatk SplitIntervals --scatter-count 50     │
 │  PROCESS:    parallel variant calling (array jobs)      │
 │  GATHER:     gatk GatherVcfs or bcftools concat         │
-│                                                          │
+│                                                         │
 │  Always:     - Validate completion                      │
 │              - Check variant counts                     │
 │              - Use interval padding                     │
 │              - Monitor resource usage                   │
-│                                                          │
+│                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
